@@ -1,8 +1,9 @@
 import { Search, ChevronDown, User, ShoppingBag, UtensilsCrossed } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 
 export default function RestaurantHeader() {
+  const navigate = useNavigate()
   const size = 18
   const location = useLocation()
   const [hidden, setHidden] = useState(false)
@@ -27,10 +28,12 @@ export default function RestaurantHeader() {
 
   const IsInfo = location.pathname === '/app/info';
   const IsPlay = location.pathname === '/app/play';
+  const IsHelp = location.pathname === '/app/help';
+  const IsAccount = location.pathname === '/app/account';
 
   return (
     <div className={`p-4 md:p-6 fixed flex items-center justify-center top-0 left-0 right-0 z-50 transition-transform transition-opacity duration-300 ${shouldHideOnScroll && hidden ? '-translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`}>
-      {!IsInfo && !IsPlay && (
+      {!IsInfo && !IsPlay && !IsHelp && !IsAccount && (
       <header className="transition-all max-w-[1000px] rounded-full duration-300 bg-white/95 backdrop-blur-lg shadow-xl border border-amber-100">
 
         <div className="max-w-[1400px] mx-auto px-6 lg:px-10">
@@ -112,7 +115,7 @@ export default function RestaurantHeader() {
               </button>
 
               {/* User */}
-              <button className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl transition-all shadow-lg hover:shadow-xl font-semibold">
+              <button onClick={() => navigate('/app/account')} className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl transition-all shadow-lg hover:shadow-xl font-semibold">
                 <User size={size} />
                 <span className="hidden lg:inline text-sm">Compte</span>
               </button>

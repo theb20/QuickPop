@@ -6,19 +6,23 @@ export default function RestaurantFooter() {
   const location = useLocation();
 
   const IsPlay = location.pathname === '/app/play';
+  const IsHelp = location.pathname === '/app/help';
+  const IsApp = location.pathname === '/app';
+  const IsAccount = location.pathname === '/app/account';
 
   return (
     <div className="">
-      {!IsPlay && (
+      {!IsPlay && !IsAccount && (
       <footer className="bg-white text-gray-900">
         {/* Newsletter Section */}
-        <div className="bg-[url('/imgs/wall-minion.jpg')] bg-cover bg-center">
-          <div className="max-w-7xl mx-auto px-4 py-24">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-              
+        {IsApp && (
+          <div className="bg-[url('/imgs/wall-minion.jpg')] bg-cover bg-center">
+            <div className="max-w-7xl mx-auto px-4 py-24">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-6">           
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Main Footer Content */}
         <div className="max-w-7xl mx-auto px-4 py-16">
@@ -51,9 +55,9 @@ export default function RestaurantFooter() {
             <div>
               <h4 className="text-lg font-bold mb-6 text-gray-900">Liens rapides</h4>
               <ul className="space-y-3">
-                <li><a href="#" className="text-gray-600 hover:text-red-600 transition">Catalogue</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-red-600 transition">Mon compte</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-red-600 transition">Hors connexion</a></li>
+                <li><a href="/app/category" className="text-gray-600 hover:text-red-600 transition">Catalogue</a></li>
+                <li><a href="/app/account" className="text-gray-600 hover:text-red-600 transition">Mon compte</a></li>
+                <li><a href="/offline" className="text-gray-600 hover:text-red-600 transition">Hors connexion</a></li>
               </ul>
             </div>
 
@@ -61,9 +65,9 @@ export default function RestaurantFooter() {
             <div>
               <h4 className="text-lg font-bold mb-6 text-gray-900">Aide & Support</h4>
               <ul className="space-y-3">
-                <li><a href="#" className="text-gray-600 hover:text-red-600 transition">Centre d'aide</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-red-600 transition">Conditions générales</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-red-600 transition">Politique de confidentialité</a></li>
+                <li><a href="/app/help" className="text-gray-600 hover:text-red-600 transition">Centre d'aide</a></li>
+                <li><a href="/terms" className="text-gray-600 hover:text-red-600 transition">Conditions générales</a></li>
+                <li><a href="/terms" className="text-gray-600 hover:text-red-600 transition">Politique de confidentialité</a></li>
               </ul>
             </div>
 
@@ -92,8 +96,8 @@ export default function RestaurantFooter() {
               © 2025 QuickPop. Tous droits réservés.
             </p>
             <div className="flex flex-wrap gap-6 text-sm">
-              <a href="#" className="text-gray-500 hover:text-red-600 transition">Mentions légales</a>
-              <a href="#" className="text-gray-500 hover:text-red-600 transition">Cookies</a>
+              <a href="/terms" className="text-gray-500 hover:text-red-600 transition">Mentions légales</a>
+              <a href="/terms" className="text-gray-500 hover:text-red-600 transition">Cookies</a>
             </div>
           </div>
         </div>
