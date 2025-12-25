@@ -5,8 +5,10 @@ export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const initialToken = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(!!initialToken);
+  const initialUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user") || "null") : null;
+  
+  const [user, setUser] = useState(initialUser);
+  const [loading, setLoading] = useState(!!initialToken && !initialUser);
 
   // Session persistante
   useEffect(() => {
@@ -15,11 +17,29 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
         return;
     }
+    
+    // If we already have user (from localStorage), we don't need to block loading, 
+    // but we should still verify/update from server if online.
+    if (initialUser) {
+        setLoading(false); 
+    }
+
     authService.getMe()
-        .then((res) => setUser(res))
-        .catch(() => {
-            localStorage.removeItem("token");
-            setUser(null);
+        .then((res) => {
+            setUser(res);
+            localStorage.setItem("user", JSON.stringify(res));
+        })
+        .catch((err) => {
+            // Only logout if it's NOT a network error (e.g. 401 Unauthorized)
+            // or if we are online but failed.
+            // If offline, we assume token is still valid.
+            if (navigator.onLine && err?.response?.status === 401) {
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+                setUser(null);
+            } else if (!navigator.onLine) {
+                console.log("Offline: Keeping session based on local storage.");
+            }
         })
         .finally(() => setLoading(false));
   }, []);
@@ -27,26 +47,31 @@ export const AuthProvider = ({ children }) => {
   const signIn = async (data) => {
     const payload = data?.code ? data : { code: data?.email, password: data?.password };
     const res = await authService.login(payload);
-    // login service already sets token in localStorage?
-    // checking service code: yes it does.
     setUser(res.user);
+    localStorage.setItem("user", JSON.stringify(res.user));
     return res;
   };
 
   const signUp = async (data) => {
     const res = await authService.register(data);
     setUser(res.user);
+    localStorage.setItem("user", JSON.stringify(res.user));
     return res;
   };
 
   const signOut = async () => {
-    await authService.logout();
+    try {
+        await authService.logout();
+    } catch(e) { console.error(e); }
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setUser(null);
   };
 
   const updateProfile = async (data) => {
     const updatedUser = await authService.updateProfile(data);
     setUser(updatedUser);
+    localStorage.setItem("user", JSON.stringify(updatedUser));
     return updatedUser;
   };
 

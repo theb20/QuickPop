@@ -77,11 +77,12 @@ export default function RestaurantHeader() {
   }, [notifOpen]);
 
   return (
-    <div className={`p-4 md:p-6 fixed flex items-center justify-center top-0 left-0 right-0 z-[100] transition-transform transition-opacity duration-300 ${shouldHideOnScroll && hidden && !mobileMenuOpen ? '-translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`}>
+    <>
+    <div className={`p-4 md:p-6 fixed z-20 flex items-center justify-center top-0 left-0 right-0 transition-transform transition-opacity duration-300 ${shouldHideOnScroll && hidden && !mobileMenuOpen ? '-translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`}>
       {!IsInfo && !IsPlay && !IsHelp && !IsAccount && (
-      <div className="transition-all duration-300 rounded-full p-[2px] conic-border">
+      <div className="transition-all duration-300 rounded-full p-[2px] conic-border w-full max-w-[850px]">
 
-        <header className="transition-all max-w-[1000px] rounded-full duration-300 bg-white/95 backdrop-blur-lg shadow-xl">
+        <header className="transition-all w-full rounded-full duration-300 bg-white/95 backdrop-blur-lg shadow-xl">
 
           <div className="max-w-[1400px] mx-auto px-6 lg:px-10">
             <div className="flex items-center justify-between h-20">
@@ -209,7 +210,7 @@ export default function RestaurantHeader() {
                   )}
                 </div>
                 {/* User */}
-                <button onClick={() => navigate('/app/account')} className=" hidden lg:inline flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl transition-all shadow-lg hover:shadow-xl font-semibold">
+                <button onClick={() => navigate('/app/account')} className=" hidden lg:flex items-center gap-1 px-4 py-2.5 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl transition-all shadow-lg hover:shadow-xl  font-semibold">
                   <User size={size} />
                   <span className=" text-sm">Compte</span>
                 </button>
@@ -226,10 +227,16 @@ export default function RestaurantHeader() {
             </div>
           </div>
 
-          {/* Mobile Menu Overlay */}
-          <div className={`lg:hidden fixed inset-0 z-50 bg-white transition-all duration-300 ease-in-out ${mobileMenuOpen ? 'translate-x-0 opacity-100 visible' : 'translate-x-full opacity-0 invisible'} top-20`}>
+        </header>
 
-             <div className="flex flex-col p-6 space-y-4 h-auto rounded-xl mt-2 backdrop-blur-md bg-white overflow-y-auto">
+      </div>
+      )}
+    </div>
+
+    {/* Mobile Menu Overlay - Moved outside header to ensure full screen width context */}
+    <div className={`lg:hidden fixed inset-0 bg-white/95 backdrop-blur-sm transition-all duration-300 ease-in-out ${mobileMenuOpen ? 'translate-x-0 opacity-100 visible' : 'translate-x-full opacity-0 invisible'} top-20`}>
+
+             <div className="flex flex-col p-6 space-y-4 h-full overflow-y-auto">
                 <NavLink 
                    to="/app" 
                    end
@@ -259,15 +266,15 @@ export default function RestaurantHeader() {
                          Toutes les catégories
                       </NavLink>
                       {categories.map((category) => (
-                         <NavLink
+                        <NavLink
                             key={category.id}
                             to={`/app/category/${category.id}`}
                             onClick={() => setMobileMenuOpen(false)}
                             className={({isActive}) => `flex items-center gap-3 p-3 rounded-lg text-base font-medium transition-colors ${isActive ? 'text-red-600 bg-red-50' : 'text-gray-600 hover:text-red-600'}`}
-                         >
+                        >
                             <Film size={16} />
                             {category.name || category.title}
-                         </NavLink>
+                        </NavLink>
                       ))}
                    </div>
                 </div>
@@ -289,11 +296,6 @@ export default function RestaurantHeader() {
                 </NavLink>
              </div>
           </div>
-
-        </header>
-
-      </div>
-      )}
-    </div>
+    </>
   )
 }

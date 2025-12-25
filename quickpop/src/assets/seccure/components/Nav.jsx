@@ -13,7 +13,7 @@ export default function NavBar() {
   ];
 
   return (
-    <nav className="flex rounded-b-xl items-center gap-12 px-10 py-5 bg-white border-b border-gray-100">
+    <nav className="flex items-center gap-12 px-10 py-5 bg-white border-b border-gray-100">
       {links.map((link) => {
         const active = location.pathname === link.path;
 

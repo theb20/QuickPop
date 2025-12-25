@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Search, Star, Info, Plus, ChevronRight, Volume2, VolumeX, Eye, ThumbsUp } from 'lucide-react';
+import { Play, Star, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import HomeAnimate from '../components/homeAnimate.jsx';
@@ -7,7 +7,6 @@ import api from '../../config/api.js';
 
 export default function StreamingHomepage() {
   const navigate = useNavigate();
-  const [hoveredCard, setHoveredCard] = useState(null);
   const [featuredVideos, setFeaturedVideos] = useState([]);
   const [trendingVideos, setTrendingVideos] = useState([]);
   const [latestVideos, setLatestVideos] = useState([]);
@@ -97,169 +96,135 @@ export default function StreamingHomepage() {
   return (
     <div className="min-h-screen bg-white text-black">
       {/* Hero Section */}
-      <section className="relative z-20 h-screen w-full ">
+      <section className="relative -z-2 h-screen w-full ">
         <HomeAnimate items={latestVideos.length > 0 ? latestVideos : undefined} />
       </section>
 
+      <style>{`
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
+
       {/* Featured Section */}
       <motion.section
-        className="relative mt-12 z-10 pb-20"
+        className="relative mt-8  z-10 pb-12"
         variants={fadeUp}
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, amount: 0.2 }}
       >
         <div className="max-w-[1400px] mx-auto px-6 lg:px-10">
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-3xl font-black tracking-tight">À la une</h2>
-              <p className="text-sm text-gray-400">Mis à jour récemment</p>
+              <h2 className="text-2xl font-bold tracking-tight text-gray-900">À la une</h2>
             </div>
-            <button onClick={() => { navigate('/app/category'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="flex items-center justify-center space-x-2 text-sm font-semibold text-gray-400 hover:text-white transition group">
-              <span className="tracking-wide p-0">Voir plus</span>
-              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform p-0" />
+            <button onClick={() => { navigate('/app/category'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-sm font-semibold text-red-600 hover:text-red-700 transition">
+              Voir tout
             </button>
           </div>
 
-          <motion.div
-            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6"
-            variants={stagger}
-          >
-            {featuredVideos.map((item, index) => (
-              <motion.div
-                variants={fadeUp}
-                key={item.id}
-                className="group relative cursor-pointer"
-                onMouseEnter={() => setHoveredCard(item.id)}
-                onMouseLeave={() => setHoveredCard(null)}
-                onClick={() => navigate(`/app/info/${item.id}`)}
-              >
-                <div className={`relative rounded-lg aspect-[2/3] overflow-hidden shadow-2xl transform transition-all duration-500 ${hoveredCard === item.id ? 'scale-105 shadow-3xl' : ''}`}>
-                  {item.thumbnail_url ? (
-                    <img src={item.thumbnail_url} alt={item.title} className="absolute inset-0 w-full h-full object-cover" />
-                  ) : (
-                    <div className={`absolute inset-0 bg-gradient-to-br ${item.thumb}`} />
-                  )}
-                  <div className={`absolute inset-0 bg-black transition-all duration-500 ${hoveredCard === item.id ? 'bg-opacity-40' : 'bg-opacity-0'}`}> 
-                    <div className={`absolute inset-0 flex flex-col items-center justify-center transform transition-all duration-500 ${hoveredCard === item.id ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
-                      <button className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 hover:scale-110 transition-transform shadow-2xl">
-                        <Play className="w-7 h-7 text-black fill-black ml-1" />
-                      </button>
-                      <div className="flex items-center space-x-2">
-                        <button className="w-10 h-10 bg-black/60 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center hover:bg-black/80 transition">
-                          <Plus color='white' className="w-5 h-5" />
-                        </button>
-                        <button className="w-10 h-10 bg-black/60 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center hover:bg-black/80 transition">
-                          <Info color='white' className="w-5 h-5 " />
-                        </button>
+          <div className="relative group">
+            <motion.div
+              className="flex gap-4  overflow-x-auto pb-6 -ms-1 py-6 lg:mx-0 lg:px-0 no-scrollbar snap-x snap-mandatory"
+              variants={stagger}
+            >
+              {featuredVideos.map((item, index) => (
+                <motion.div
+                  key={item.id}
+                  className="min-w-[160px] md:min-w-[200px] lg:min-w-[220px] snap-start"
+                  onClick={() => navigate(`/app/info/${item.id}`)}
+                >
+                  <div className="relative aspect-[2/3] rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer group/card">
+                     {item.thumbnail_url ? (
+                        <img src={item.thumbnail_url} alt={item.title} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className={`absolute inset-0 bg-gradient-to-br ${item.thumb}`} />
+                      )}
+                      
+                      {/* Hover Overlay */}
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                         <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg transform scale-0 group-hover/card:scale-100 transition-transform duration-300">
+                            <Play className="w-5 h-5 text-black fill-black ml-1" />
+                         </div>
                       </div>
+                      
+                      {/* Top Left Rank/Badge */}
+                       <div className="absolute top-2 left-2">
+                        <div className="w-6 h-6 bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/10">
+                          <span className="text-xs text-white font-bold">{index + 1}</span>
+                        </div>
+                      </div>
+                  </div>
+                  
+                  <div className="mt-3">
+                    <h3 className="font-semibold text-gray-900 text-sm truncate">{item.title}</h3>
+                    <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                        <span>{item.year}</span>
+                        <span>•</span>
+                        <span className="flex items-center gap-1"><Star className="w-3 h-3 fill-yellow-400 text-yellow-400"/> {item.rating}</span>
                     </div>
                   </div>
-
-                  <div className="absolute top-4 left-4">
-                    <div className="w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/10">
-                      <span className="text-lg text-white font-black">{index + 1}</span>
-                    </div>
-                  </div>
-
-                  <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
-                    <div className="flex items-center space-x-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1.5 rounded-lg border border-white/10 shadow-lg">
-                      <Eye className="w-3.5 h-3.5 text-blue-400" />
-                      <span className="text-xs text-white font-bold tabular-nums">{item.views}</span>
-                    </div>
-                    <div className="flex items-center space-x-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1.5 rounded-lg border border-white/10 shadow-lg">
-                      <ThumbsUp className="w-3.5 h-3.5 text-green-400" />
-                      <span className="text-xs text-white font-bold tabular-nums">{item.likes}</span>
-                    </div>
-                    <div className="flex items-center space-x-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1.5 rounded-lg border border-white/10 shadow-lg">
-                      <Star className="w-3.5 h-3.5 fill-yellow-500 text-yellow-500" />
-                      <span className="text-xs text-white font-bold tabular-nums">{item.rating}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className={`mt-4 transition-all duration-300 ${hoveredCard === item.id ? 'opacity-100 translate-y-0' : 'opacity-70 translate-y-1'}`}>
-                  <h3 className="font-bold text-base mb-1 tracking-tight">{item.title}</h3>
-                  <div className="flex items-center space-x-2 text-xs text-gray-500">
-                    <span>{item.year}</span>
-                    <span>•</span>
-                    <span>{item.runtime}</span>
-                  </div>
-                  <div className="flex items-center space-x-2 mt-1">
-                    {item.genres.slice(0, 2).map((genre, i) => (
-                      <span key={i} className="text-xs text-gray-400 font-medium">{genre}</span>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
         </div>
       </motion.section>
 
       {/* Trending Section */}
       <motion.section
-        className="pb-20"
+        className="pb-24"
         variants={fadeUp}
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, amount: 0.2 }}
       >
         <div className="max-w-[1400px] mx-auto px-6 lg:px-10">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-3xl font-black tracking-tight mb-2">Tendance</h2>
-              <p className="text-gray-500 text-sm tracking-wide">Les vidéos les plus populaires du moment</p>
-            </div>
-          </div>
+           <div className="mb-8">
+              <h2 className="text-2xl font-bold tracking-tight text-gray-900 mb-1">Tendance</h2>
+              <p className="text-gray-500 text-sm">Les pépites du moment</p>
+           </div>
 
-          <motion.div
-            className="grid grid-cols-2 md:grid-cols-4 gap-6"
-            variants={stagger}
-          >
-            {trendingVideos.map((item) => (
-              <motion.div
-                variants={fadeUp}
-                key={item.id}
-                className="group relative cursor-pointer"
-                onClick={() => navigate(`/app/info/${item.id}`)}
-              >
-                <div className={`relative bg-gradient-to-br ${item.thumb} rounded-xl aspect-video overflow-hidden shadow-2xl transform transition-all duration-500 group-hover:scale-105`}>
-                  {item.thumbnail_url && (
-                    <img src={item.thumbnail_url} alt={item.title} className="absolute inset-0 w-full h-full object-cover" />
-                  )}
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-500 flex items-center justify-center">
-                    <button className="w-16 h-16 bg-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transform scale-75 group-hover:scale-100 transition-all duration-500 shadow-2xl">
-                      <Play className="w-7 h-7 text-black fill-black ml-1" />
-                    </button>
-                  </div>
-                  <div className="absolute top-4 left-4">
-                    <div className="px-3 py-1 bg-red-600 rounded text-xs font-bold tracking-wider">
-                      POPULAIRE
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-[200px]">
+            {trendingVideos.slice(0, 5).map((item, index) => {
+               const isFirst = index === 0;
+               return (
+                <motion.div
+                  key={item.id}
+                  className={`relative rounded-2xl overflow-hidden cursor-pointer group ${isFirst ? 'md:col-span-2 md:row-span-2' : 'col-span-1 row-span-1'}`}
+                  onClick={() => navigate(`/app/info/${item.id}`)}
+                >
+                   {item.thumbnail_url ? (
+                      <img src={item.thumbnail_url} alt={item.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                    ) : (
+                      <div className={`absolute inset-0 bg-gradient-to-br ${item.thumb}`} />
+                    )}
+                    
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+                    
+                    <div className="absolute bottom-0 left-0 p-4 w-full">
+                       {isFirst && <span className="inline-block px-2 py-1 bg-red-600 text-white text-xs font-bold rounded mb-2">TOP TENDANCE</span>}
+                       <h3 className={`font-bold text-white mb-1 leading-tight ${isFirst ? 'text-2xl' : 'text-base'}`}>{item.title}</h3>
+                       <div className="flex items-center gap-3 text-white/80 text-xs font-medium">
+                          <span>{item.episodes}</span>
+                          <span className="flex items-center gap-1"><Eye className="w-3 h-3"/> {item.views}</span>
+                       </div>
                     </div>
-                  </div>
-                  <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
-                    <div className="flex items-center space-x-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1.5 rounded-lg border border-white/10 shadow-lg">
-                      <Eye className="w-3.5 h-3.5 text-blue-400" />
-                      <span className="text-xs text-white font-bold tabular-nums">{item.views}</span>
+                    
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30">
+                           <Play className="w-5 h-5 text-white fill-white ml-1" />
+                        </div>
                     </div>
-                    <div className="flex items-center space-x-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1.5 rounded-lg border border-white/10 shadow-lg">
-                      <ThumbsUp className="w-3.5 h-3.5 text-green-400" />
-                      <span className="text-xs text-white font-bold tabular-nums">{item.likes}</span>
-                    </div>
-                    <div className="flex items-center space-x-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1.5 rounded-lg border border-white/10 shadow-lg">
-                      <Star className="w-3.5 h-3.5 fill-yellow-500 text-yellow-500" />
-                      <span className="text-xs text-white font-bold tabular-nums">{item.rating}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-4">
-                  <h3 className="font-bold text-lg mb-1 tracking-tight group-hover:text-gray-300 transition">{item.title}</h3>
-                  <p className="text-sm text-gray-500">{item.episodes}</p>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
+                </motion.div>
+               )
+            })}
+          </div>
         </div>
       </motion.section>
     </div>

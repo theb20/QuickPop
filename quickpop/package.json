@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "vite",
     "dev:lan": "vite --host 0.0.0.0 --port 3001",
-    "build": "vite build",
+    "build": "vite build && firebase deploy",
     "lint": "eslint src",
     "preview": "vite preview",
     "test": "react-scripts test --watchAll=false"
@@ -21,6 +21,7 @@
     "@radix-ui/react-menubar": "^1.1.16",
     "axios": "^1.13.2",
     "dropbox": "^10.34.0",
+    "firebase": "^12.7.0",
     "framer-motion": "^11.18.2",
     "lucide-react": "^0.556.0",
     "react": "^19.2.0",

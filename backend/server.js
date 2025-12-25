@@ -49,7 +49,7 @@ const IS_PRODUCTION = NODE_ENV === 'production';
 const io = new Server(httpServer, {
   cors: {
     origin: IS_PRODUCTION 
-      ? ['https://votredomaine.com'] 
+      ? ['https://quick-pop.web.app'] 
       : '*', 
     methods: ["GET", "POST"]
   }

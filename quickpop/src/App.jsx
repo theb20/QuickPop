@@ -25,7 +25,8 @@ function App() {
 
   useEffect(() => {
     const handleOffline = () => {
-      if (location.pathname !== '/offline') {
+      // Allow staying on /offline or /app/play (for watching downloaded videos)
+      if (location.pathname !== '/offline' && !location.pathname.startsWith('/app/play')) {
         navigate('/offline', { state: { from: location.pathname }, replace: true })
       }
     }

@@ -325,7 +325,7 @@ export default function QuickPopProfile() {
               </div>
             </div>
 
-            <div className="absolute z-10000 right-0">
+            <div className="absolute z-[1000] right-0">
               <NavBar />
             </div>
           </div>
