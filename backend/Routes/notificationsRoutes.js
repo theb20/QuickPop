@@ -1,10 +1,10 @@
 import express from 'express';
 import * as notificationsController from '../Controllers/notificationsController.js';
-import { authenticateToken } from '../Middleware/authMiddleware.js';
+import { requireAuth } from '../Middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.use(authenticateToken);
+router.use(requireAuth);
 
 router.get('/', notificationsController.getNotifications);
 router.put('/:id/read', notificationsController.markAsRead);

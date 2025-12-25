@@ -78,7 +78,7 @@ export default function RestaurantHeader() {
 
   return (
     <>
-    <div className={`p-4 md:p-6 fixed z-20 flex items-center justify-center top-0 left-0 right-0 transition-transform transition-opacity duration-300 ${shouldHideOnScroll && hidden && !mobileMenuOpen ? '-translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`}>
+    <div className={`p-4 md:p-6 fixed z-[100] flex items-center justify-center top-0 left-0 right-0 transition-transform transition-opacity duration-300 ${shouldHideOnScroll && hidden && !mobileMenuOpen ? '-translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`}>
       {!IsInfo && !IsPlay && !IsHelp && !IsAccount && (
       <div className="transition-all duration-300 rounded-full p-[2px] conic-border w-full max-w-[850px]">
 
@@ -217,7 +217,7 @@ export default function RestaurantHeader() {
 
                 {/* Mobile Menu Button */}
                 <button 
-                  className="lg:hidden p-2.5 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors text-gray-700"
+                  className="lg:hidden p-2.5 bg-gray-100 hover:bg-red-600 rounded-xl transition-colors text-gray-700 hover:text-gray-100"
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 >
                   {mobileMenuOpen ? <X size={size} /> : <Menu size={size} />}
@@ -233,69 +233,179 @@ export default function RestaurantHeader() {
       )}
     </div>
 
-    {/* Mobile Menu Overlay - Moved outside header to ensure full screen width context */}
-    <div className={`lg:hidden fixed inset-0 bg-white/95 backdrop-blur-sm transition-all duration-300 ease-in-out ${mobileMenuOpen ? 'translate-x-0 opacity-100 visible' : 'translate-x-full opacity-0 invisible'} top-20`}>
+      {/* Mobile Menu Overlay - AI/Futuristic "Fluid Hub" Design */}
+      <div className={`lg:hidden fixed inset-0 z-[200] overflow-hidden transition-all duration-500 ${mobileMenuOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}>
+        
+        {/* Animated Backdrop with Gradient */}
+        <div 
+          className={`absolute inset-0 bg-black/80 backdrop-blur-3xl transition-opacity duration-500 ${mobileMenuOpen ? 'opacity-100' : 'opacity-0'}`} 
+          onClick={() => setMobileMenuOpen(false)}
+        >
+          {/* Subtle animated gradient blobs */}
+          <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-red-400/20 rounded-full blur-[100px] animate-pulse" />
+          <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-amber-300/20 rounded-full blur-[100px] animate-pulse delay-1000" />
+        </div>
 
-             <div className="flex flex-col p-6 space-y-4 h-full overflow-y-auto">
-                <NavLink 
-                   to="/app" 
-                   end
-                   onClick={() => setMobileMenuOpen(false)}
-                   className={({isActive}) => `flex items-center gap-3 p-4 rounded-xl text-lg font-semibold transition-colors ${isActive ? 'bg-red-50 text-red-600' : 'text-gray-700 hover:bg-gray-50'}`}
-                >
-                   <span>Accueil</span>
-                </NavLink>
+        {/* Content Container */}
+        <div className={`relative h-full flex flex-col pt-24 px-6 pb-10 transition-transform duration-500 cubic-bezier(0.2, 0.8, 0.2, 1) ${mobileMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
+          
+          {/* Close Button - Floating */}
+          <button 
+            onClick={() => setMobileMenuOpen(false)}
+            className="absolute top-6 right-6 p-3 bg-white shadow-xl shadow-red-100/50 rounded-full text-gray-500 hover:text-red-600 transition-transform hover:scale-110 active:scale-95"
+          >
+            <X size={24} strokeWidth={2.5} />
+          </button>
 
-                {/* Mobile Categories */}
-                <div className="space-y-2">
-                   <div className="flex items-center justify-between p-4 rounded-xl text-lg font-semibold text-gray-700 hover:bg-gray-50 cursor-pointer" onClick={() => setCategoryMenuOpen(!categoryMenuOpen)}>
-                      <div className="flex items-center gap-3">
-                         <span>Catégories</span>
-                      </div>
-                      <ChevronDown size={20} className={`transition-transform duration-300 ${categoryMenuOpen ? 'rotate-180' : ''}`} />
-                   </div>
-                   
-                   <div className={`space-y-1 pl-4 overflow-hidden transition-all duration-300 ${categoryMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
-                      <NavLink
-                         to="/app/category"
-                         end
-                         onClick={() => setMobileMenuOpen(false)}
-                         className={({isActive}) => `flex items-center gap-3 p-3 rounded-lg text-base font-medium transition-colors ${isActive ? 'text-red-600 bg-red-50' : 'text-gray-600 hover:text-red-600'}`}
+          <div className="flex-1 flex flex-col gap-4 overflow-y-auto no-scrollbar">
+              
+              {/* Menu Items with Staggered Entry */}
+              {[
+                { to: "/app", label: "Accueil", icon: null, delay: "100ms" },
+                // Categories is special, handled below
+                { to: "/app/help", label: "Documentation", icon: null, delay: "200ms" },
+                { to: "/app/account", label: "Mon compte", icon: null, delay: "300ms" }
+              ].map((item) => {
+                 if (item.label === "Accueil") {
+                    return (
+                      <NavLink 
+                        key={item.to}
+                        to={item.to} 
+                        end 
+                        onClick={() => setMobileMenuOpen(false)} 
+                        style={{ transitionDelay: mobileMenuOpen ? item.delay : '0ms' }}
+                        className={({isActive}) => `
+                          group relative flex items-center justify-between p-6 rounded-[2rem] border transition-all duration-500
+                          ${isActive 
+                            ? 'bg-gradient-to-br from-red-600 to-red-500 text-white border-transparent shadow-xl shadow-red-500/30 scale-100 translate-x-0' 
+                            : 'bg-white border-white/50 text-gray-600 shadow-lg shadow-gray-200/50 hover:scale-[1.02] hover:shadow-xl'
+                          }
+                          ${mobileMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}
+                        `} 
                       >
-                         <Film size={16} />
-                         Toutes les catégories
+                        {({ isActive }) => (
+                          <>
+                            <span className="text-xl font-bold tracking-tight">{item.label}</span>
+                            <div className={`p-2 rounded-full ${isActive ? 'bg-white/20' : 'bg-gray-100'}`}>
+                               <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-white animate-ping' : 'bg-gray-400'}`} />
+                            </div>
+                          </>
+                        )}
                       </NavLink>
-                      {categories.map((category) => (
-                        <NavLink
-                            key={category.id}
-                            to={`/app/category/${category.id}`}
-                            onClick={() => setMobileMenuOpen(false)}
-                            className={({isActive}) => `flex items-center gap-3 p-3 rounded-lg text-base font-medium transition-colors ${isActive ? 'text-red-600 bg-red-50' : 'text-gray-600 hover:text-red-600'}`}
-                        >
-                            <Film size={16} />
-                            {category.name || category.title}
-                        </NavLink>
-                      ))}
-                   </div>
-                </div>
+                    )
+                 }
+                 // Render other simple links later
+                 return null;
+              })}
 
-                <NavLink 
-                   to="/app/help" 
-                   onClick={() => setMobileMenuOpen(false)}
-                   className={({isActive}) => `flex items-center gap-3 p-4 rounded-xl text-lg font-semibold transition-colors ${isActive ? 'bg-red-50 text-red-600' : 'text-gray-700 hover:bg-gray-50'}`}
+              {/* Categories - Special Expandable Card */}
+              <div 
+                style={{ transitionDelay: mobileMenuOpen ? '150ms' : '0ms' }}
+                className={`
+                  relative rounded-[2rem] bg-white border border-white/50 shadow-lg shadow-gray-200/50 overflow-hidden transition-all duration-500
+                  ${mobileMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}
+                `}
+              >
+                 <div 
+                    className="flex items-center justify-between p-6 cursor-pointer"
+                    onClick={() => setCategoryMenuOpen(!categoryMenuOpen)}
+                 >
+                    <span className="text-xl font-bold text-gray-700">Catégories</span>
+                    <div className={`p-2 rounded-full bg-gray-50 transition-transform duration-500 ${categoryMenuOpen ? 'rotate-180 bg-red-50 text-red-600' : 'text-gray-400'}`}>
+                      <ChevronDown size={24} />
+                    </div>
+                 </div>
+
+                 {/* Animated Height Container */}
+                 <div className={`transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${categoryMenuOpen ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                    <div className="px-4 pb-6 space-y-2">
+                        <NavLink 
+                          to="/app/category" 
+                          end 
+                          onClick={() => setMobileMenuOpen(false)} 
+                          className={({isActive}) => `flex items-center gap-4 p-4 rounded-2xl transition-all ${isActive ? 'bg-red-50 text-red-600 font-bold' : 'hover:bg-gray-50 text-gray-500'}`}
+                        > 
+                          <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-current">
+                            <Film size={18} />
+                          </div>
+                          <span className="text-lg">Toutes</span> 
+                        </NavLink> 
+                        {categories.map((category) => ( 
+                          <NavLink 
+                              key={category.id} 
+                              to={`/app/category/${category.id}`} 
+                              onClick={() => setMobileMenuOpen(false)} 
+                              className={({isActive}) => `flex items-center gap-4 p-4 rounded-2xl transition-all ${isActive ? 'bg-red-50 text-red-600 font-bold' : 'hover:bg-gray-50 text-gray-500'}`}
+                          > 
+                              <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-current">
+                                <Film size={18} />
+                              </div>
+                              <span className="text-lg">{category.name || category.title}</span> 
+                          </NavLink> 
+                        ))} 
+                    </div>
+                 </div>
+              </div>
+
+              {/* Other Links */}
+               <NavLink 
+                  to="/app/help" 
+                  onClick={() => setMobileMenuOpen(false)} 
+                  style={{ transitionDelay: mobileMenuOpen ? '200ms' : '0ms' }}
+                  className={({isActive}) => `
+                    group relative flex items-center justify-between p-6 rounded-[2rem] border transition-all duration-500
+                    ${isActive 
+                      ? 'bg-gradient-to-br from-red-600 to-red-500 text-white border-transparent shadow-xl shadow-red-500/30 scale-100' 
+                      : 'bg-white border-white/50 text-gray-600 shadow-lg shadow-gray-200/50 hover:scale-[1.02] hover:shadow-xl'
+                    }
+                    ${mobileMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}
+                  `} 
                 >
-                   <span>Documentation</span>
+                  {({ isActive }) => (
+                    <>
+                      <span className="text-xl font-bold tracking-tight">Documentation</span>
+                      <div className={`p-2 rounded-full ${isActive ? 'bg-white/20' : 'bg-gray-100'}`}>
+                          <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-white animate-ping' : 'bg-gray-400'}`} />
+                      </div>
+                    </>
+                  )}
                 </NavLink>
 
                 <NavLink 
-                   to="/app/account" 
-                   onClick={() => setMobileMenuOpen(false)}
-                   className={({isActive}) => `flex items-center gap-3 p-4 rounded-xl text-lg font-semibold transition-colors ${isActive ? 'bg-red-50 text-red-600' : 'text-gray-700 hover:bg-gray-50'}`}
+                  to="/app/account" 
+                  onClick={() => setMobileMenuOpen(false)} 
+                  style={{ transitionDelay: mobileMenuOpen ? '250ms' : '0ms' }}
+                  className={({isActive}) => `
+                    group relative flex items-center justify-between p-6 rounded-[2rem] border transition-all duration-500
+                    ${isActive 
+                      ? 'bg-gradient-to-br from-red-600 to-red-500 text-white border-transparent shadow-xl shadow-red-500/30 scale-100' 
+                      : 'bg-white border-white/50 text-gray-600 shadow-lg shadow-gray-200/50 hover:scale-[1.02] hover:shadow-xl'
+                    }
+                    ${mobileMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}
+                  `} 
                 >
-                   <span>Mon compte</span>
+                  {({ isActive }) => (
+                    <>
+                      <span className="text-xl font-bold tracking-tight">Mon compte</span>
+                      <div className={`p-2 rounded-full ${isActive ? 'bg-white/20' : 'bg-gray-100'}`}>
+                          <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-white animate-ping' : 'bg-gray-400'}`} />
+                      </div>
+                    </>
+                  )}
                 </NavLink>
-             </div>
+
           </div>
+          
+          {/* Footer Info */}
+          <div 
+             style={{ transitionDelay: mobileMenuOpen ? '350ms' : '0ms' }}
+             className={`mt-6 text-center transition-all duration-500 ${mobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+          >
+             <p className="text-sm text-gray-400 font-medium">QuickPop v1.0</p>
+          </div>
+
+        </div>
+      </div>
     </>
   )
 }
