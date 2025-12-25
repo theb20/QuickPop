@@ -1,5 +1,5 @@
-import { ensureLikesTable, findLikes } from '../models/likesModel.js'
-import { findById, createOne, updateOne, removeOne } from '../models/baseModel.js'
+import { ensureLikesTable, findLikes } from '../Models/likesModel.js'
+import { findById, createOne, updateOne, removeOne } from '../Models/baseModel.js'
 
 const TABLE = 'likes'
 const ALLOWED = ['video_id','user_id']

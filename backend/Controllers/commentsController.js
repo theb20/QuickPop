@@ -1,5 +1,5 @@
-import { ensureCommentsTable } from '../models/commentsModel.js'
-import { findAll, findById, createOne, updateOne, removeOne } from '../models/baseModel.js'
+import { ensureCommentsTable } from '../Models/commentsModel.js'
+import { findAll, findById, createOne, updateOne, removeOne } from '../Models/baseModel.js'
 
 const TABLE = 'comments'
 const ALLOWED = ['video_id','user_id','content','parent_id','is_approved']

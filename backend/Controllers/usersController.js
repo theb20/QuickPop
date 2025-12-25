@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs'
-import { ensureUsersTable, findAll, findById, create, update, remove } from '../models/usersModel.js'
+import { ensureUsersTable, findAll, findById, create, update, remove } from '../Models/usersModel.js'
 import { sendAccountValidationMail } from '../Config/mailer.js'
 
 export async function initUsersController() {

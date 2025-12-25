@@ -1,6 +1,6 @@
 import { ensureVideosTable, findByCategory, incrementViews as incViewsModel, getLatestVideosPerCategory, getFeaturedVideos, getTrendingVideos, getVideoById } from '../Models/videosModel.js'
-import { addRating, getVideoRating } from '../models/ratingsModel.js'
-import { findAll, findById, createOne, updateOne, removeOne } from '../models/baseModel.js'
+import { addRating, getVideoRating } from '../Models/ratingsModel.js'
+import { findAll, findById, createOne, updateOne, removeOne } from '../Models/baseModel.js'
 import { findTrainingByVideoId, createTrainingFromVideo, updateUserTrainingProgress } from '../Models/trainingsModel.js'
 import { awardCertificateForTraining } from '../Models/certificationsModel.js'
 import { createBroadcastNotification, createNotification } from '../Models/notificationsModel.js'

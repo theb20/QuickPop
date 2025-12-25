@@ -1,5 +1,5 @@
-import { ensurePlaylistVideosTable } from '../models/playlistVideosModel.js'
-import { findAll, findById, createOne, updateOne, removeOne } from '../models/baseModel.js'
+import { ensurePlaylistVideosTable } from '../Models/playlistVideosModel.js'
+import { findAll, findById, createOne, updateOne, removeOne } from '../Models/baseModel.js'
 
 const TABLE = 'playlist_videos'
 const ALLOWED = ['playlist_id','video_id','position']

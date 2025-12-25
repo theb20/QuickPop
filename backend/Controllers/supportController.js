@@ -1,5 +1,5 @@
-import { ensureSupportTable } from '../models/supportModel.js'
-import { findAll, findById, createOne, updateOne, removeOne } from '../models/baseModel.js'
+import { ensureSupportTable } from '../Models/supportModel.js'
+import { findAll, findById, createOne, updateOne, removeOne } from '../Models/baseModel.js'
 
 const TABLE = 'support'
 const ALLOWED = ['user_id','subject','message','status','priority','assigned_to','closed_at']

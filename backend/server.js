@@ -402,19 +402,23 @@ const gracefulShutdown = async (signal) => {
   console.log(`\n🛑 Signal ${signal} reçu, arrêt gracieux...`);
   
   // Fermer le serveur
-  server.close(async () => {
-    console.log('✅ Serveur HTTP fermé');
-    
-    // Fermer la connexion DB
-    try {
-      await db.end();
-      console.log('✅ Connexion DB fermée');
+  if (httpServer.listening) {
+      httpServer.close(async () => {
+        console.log('✅ Serveur HTTP fermé');
+        
+        // Fermer la connexion DB
+        try {
+          await db.end();
+          console.log('✅ Connexion DB fermée');
+          process.exit(0);
+        } catch (err) {
+          console.error('❌ Erreur fermeture DB:', err);
+          process.exit(1);
+        }
+      });
+  } else {
       process.exit(0);
-    } catch (err) {
-      console.error('❌ Erreur fermeture DB:', err);
-      process.exit(1);
-    }
-  });
+  }
 
   // Forcer l'arrêt après 10 secondes
   setTimeout(() => {
@@ -430,41 +434,54 @@ process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 // LANCEMENT DU SERVEUR
 // ========================================
 
-const server = httpServer.listen(PORT, '0.0.0.0', async () => {
-  console.log(`
-╔═══════════════════════════════════════╗
-║   🚀 QuickPop API                     ║
-║   📍 http://localhost:${PORT}           ║
-║   🌍 Environnement: ${NODE_ENV.padEnd(14)} ║
-╚═══════════════════════════════════════╝
-  `);
-  
-  try {
-    await testDBConnection();
-    console.log('✅ Base de données connectée\n');
+const startServer = async () => {
+    try {
+        await testDBConnection();
+        console.log('✅ Base de données connectée\n');
 
-    // Initialisation séquentielle des tables
-    await ensureUsersTable();
-    await ensureCategoriesTable();
-    await ensureVideosTable();
-    await ensureCommentsTable();
-    await ensureLikesTable();
-    await ensurePlaylistsTable();
-    await ensurePlaylistVideosTable();
-    await ensureNotificationsTable();
-    await ensureSupportTable();
-    await ensureAppSettingsTable();
-    await ensureTrainingsTables();
-    await ensureCertificationsTables();
-    await ensureRatingsTable();
+        // Initialisation séquentielle des tables
+        await ensureUsersTable();
+        await ensureCategoriesTable();
+        await ensureVideosTable();
+        await ensureCommentsTable();
+        await ensureLikesTable();
+        await ensurePlaylistsTable();
+        await ensurePlaylistVideosTable();
+        await ensureNotificationsTable();
+        await ensureSupportTable();
+        await ensureAppSettingsTable();
+        await ensureTrainingsTables();
+        await ensureCertificationsTables();
+        await ensureRatingsTable();
 
-    console.log('✅ Tables vérifiées (users, notifications, etc.)');
-  } catch (err) {
-    console.error('❌ Erreur connexion DB:', err.message);
-    if (IS_PRODUCTION) {
-      process.exit(1);
+        console.log('✅ Tables vérifiées (users, notifications, etc.)');
+    } catch (err) {
+        console.error('❌ Erreur connexion DB:', err.message);
+        // Ne pas quitter en Vercel, laisser la requête échouer proprement si besoin
+        if (IS_PRODUCTION && !process.env.VERCEL) {
+             process.exit(1);
+        }
     }
-  }
-});
+};
+
+// En environnement Vercel, on n'écoute pas sur le port, on exporte juste l'app
+// Vercel gère le cycle de vie
+if (process.env.VERCEL) {
+    // Initialisation DB asynchrone sans bloquer l'export
+    startServer();
+} else {
+    // En local ou VPS classique
+    httpServer.listen(PORT, '0.0.0.0', async () => {
+      console.log(`
+    ╔═══════════════════════════════════════╗
+    ║   🚀 QuickPop API                     ║
+    ║   📍 http://localhost:${PORT}           ║
+    ║   🌍 Environnement: ${NODE_ENV.padEnd(14)} ║
+    ╚═══════════════════════════════════════╝
+      `);
+      
+      await startServer();
+    });
+}
 
 export default app;
