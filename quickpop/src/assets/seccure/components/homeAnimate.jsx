@@ -6,7 +6,7 @@ import Search from './search.jsx'
 
 const defaultItems = [
   { 
-    title: 'QuickPop Intro', 
+    title: 'QuickPop', 
     description: 'Les vidéos essentielles sélectionnées pour toi.', 
     video: '/videos/quick.mp4', 
     poster: '/imgs/logo-mb.png'
@@ -32,7 +32,7 @@ export default function NetflixHeroSection({ items = defaultItems }) {
 
 
   return (
-    <div className="bg-black h-screen text-white relative overflow-hidden">
+    <div className="bg-black h-screen text-white relative">
 
       {/* Hero Section */}
       <section

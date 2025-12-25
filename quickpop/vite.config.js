@@ -7,35 +7,54 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      injectRegister: null, 
       registerType: 'autoUpdate',
       devOptions: {
         enabled: true,
       },
-      includeAssets: ['favicon.png'],
-      manifest: {
-        name: 'QuickPop',
-        short_name: 'QuickPop',
-        description: 'QuickPop fonctionne même hors ligne.',
-        theme_color: '#111827',
-        background_color: '#111827',
-        display: 'standalone',
-        icons: [
-          {
-            src: 'favicon.png',
-            sizes: '192x192',
-            type: 'image/png',
-          },
-          {
-            src: 'favicon.png',
-            sizes: '512x512',
-            type: 'image/png',
-          },
-        ],
+      includeAssets: ['favicon.png', 'imgs/*.png', 'imgs/*.jpg'],
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        navigateFallback: '/index.html',
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
       },
+     manifest: {
+  name: 'QuickPop Streaming',
+  short_name: 'QuickPop',
+  description: 'QuickPop - Plateforme de streaming vidéo',
+  theme_color: '#d80022',
+  background_color: '#d80022',
+  display: 'standalone',
+  scope: '/',
+  start_url: '/',
+  icons: [
+    {
+      src: '/imgs/logo-192.png',
+      sizes: '192x192',
+      type: 'image/png',
+      purpose: 'any'
+    },
+    {
+      src: '/imgs/logo-512.png',
+      sizes: '512x512',
+      type: 'image/png',
+      purpose: 'any'
+    },
+    {
+      src: '/imgs/logo-maskable-512.png',
+      sizes: '512x512',
+      type: 'image/png',
+      purpose: 'maskable'
+    }
+  ]
+}
+
     }),
   ],
   server: {
     host: '0.0.0.0',
-    port: 3000,
+    port: 3005,
   },
 })

@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom'
 import Header from './Header.jsx'
 import Footer from './Footer.jsx'
 import Cookie from './cookie.jsx'
+import Button from './button.jsx'
 
 export default function AppLayout() {
   return (
@@ -13,6 +14,7 @@ export default function AppLayout() {
         </div>
       </main>
       <Cookie />
+      <Button />
       <Footer />
     </div>
   )

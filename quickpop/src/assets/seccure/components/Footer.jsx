@@ -57,7 +57,6 @@ export default function RestaurantFooter() {
               <ul className="space-y-3">
                 <li><a href="/app/category" className="text-gray-600 hover:text-red-600 transition">Catalogue</a></li>
                 <li><a href="/app/account" className="text-gray-600 hover:text-red-600 transition">Mon compte</a></li>
-                <li><a href="/offline" className="text-gray-600 hover:text-red-600 transition">Hors connexion</a></li>
               </ul>
             </div>
 

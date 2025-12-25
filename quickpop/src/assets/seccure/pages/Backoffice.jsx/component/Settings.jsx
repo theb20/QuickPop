@@ -1,47 +1,196 @@
  import { Send, Download, Upload, AlertTriangle, Save } from 'lucide-react';
- import { useNavigate } from 'react-router-dom';
- import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
+import api from '../../../../config/api.js';
+import * as notificationService from '../../../../config/services/notifications.js';
 
- export const SettingsPage = () => {
-   const navigate = useNavigate();
-   const [platformName, setPlatformName] = useState('QuickPop');
-   const [contactEmail, setContactEmail] = useState('contact@quickpop.fr');
-   const [language, setLanguage] = useState('Français');
-   const [notifications, setNotifications] = useState([
-     { label: 'Nouveaux utilisateurs', checked: true },
-     { label: 'Certifications obtenues', checked: true },
-     { label: 'Modules complétés', checked: false },
-     { label: 'Rapports hebdomadaires', checked: true }
-   ]);
-   const [saving, setSaving] = useState(false);
-   const [saved, setSaved] = useState(false);
+export const SettingsPage = () => {
+  const navigate = useNavigate();
+  const [platformName, setPlatformName] = useState('QuickPop');
+  const [contactEmail, setContactEmail] = useState('contact@quickpop.fr');
+  const [language, setLanguage] = useState('Français');
+  const [notifications, setNotifications] = useState([
+    { label: 'Nouveaux utilisateurs', checked: true },
+    { label: 'Certifications obtenues', checked: true },
+    { label: 'Modules complétés', checked: false },
+    { label: 'Rapports hebdomadaires', checked: true }
+  ]);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const fileInputRef = useRef(null);
 
-   useEffect(() => {
-     setSaved(false);
-   }, [platformName, contactEmail, language, notifications]);
+  useEffect(() => {
+    fetchSettings();
+  }, []);
 
-   const toggleNotification = (index) => {
-     setNotifications((prev) => prev.map((n, i) => (i === index ? { ...n, checked: !n.checked } : n)));
-   };
+  const fetchSettings = async () => {
+    try {
+      const response = await api.get('/app-settings/global');
+      if (response) {
+        const data = response;
+        setPlatformName(data.app_name || 'QuickPop');
+        setContactEmail(data.support_email || 'contact@quickpop.fr');
+        setLanguage(data.default_language || 'Français');
+        if (data.notification_preferences) {
+          // Merge with defaults to ensure all keys exist
+          const savedPrefs = typeof data.notification_preferences === 'string' 
+            ? JSON.parse(data.notification_preferences) 
+            : data.notification_preferences;
+          
+          setNotifications(prev => prev.map(p => {
+             const found = savedPrefs.find(s => s.label === p.label);
+             return found ? found : p;
+          }));
+        }
+      }
+    } catch (error) {
+      console.error('Erreur chargement paramètres:', error);
+    }
+  };
 
-   const handleSave = async () => {
-     setSaving(true);
-     await new Promise((r) => setTimeout(r, 600));
-     // Ici on pourrait persister vers une API ou localStorage
-     setSaving(false);
-     setSaved(true);
-   };
+  const toggleNotification = (index) => {
+    setNotifications((prev) => prev.map((n, i) => (i === index ? { ...n, checked: !n.checked } : n)));
+    setSaved(false);
+  };
 
-   const handleImportUsers = () => {
-     // Brancher vers la modale d’import si disponible
-     console.log('Importer des utilisateurs');
-   };
-   const handleExportData = () => {
-     console.log('Exporter les données');
-   };
-   const handleSendNotification = () => {
-     console.log('Envoyer une notification');
-   };
+  const handleInputChange = (setter) => (e) => {
+    setter(e.target.value);
+    setSaved(false);
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const payload = {
+        app_name: platformName,
+        support_email: contactEmail,
+        default_language: language,
+        notification_preferences: JSON.stringify(notifications)
+      };
+
+      await api.put('/app-settings/global', payload);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (error) {
+      console.error(error);
+      alert('Erreur réseau');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleImportUsers = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          // Try parsing as JSON first
+          let users = [];
+          try {
+            const json = JSON.parse(e.target.result);
+            users = Array.isArray(json) ? json : (json.users || []);
+          } catch (err) {
+            console.warn('JSON parse failed, trying CSV', err);
+            // Simple CSV fallback if JSON fails
+            // Assuming CSV format: fullname,email,password,role
+            const text = e.target.result;
+            const lines = text.split('\n');
+            // Skip header if present (simple heuristic: check if first line contains "email")
+            const start = lines[0].toLowerCase().includes('email') ? 1 : 0;
+            
+            for (let i = start; i < lines.length; i++) {
+              const line = lines[i].trim();
+              if (!line) continue;
+              const parts = line.split(',');
+              if (parts.length >= 3) {
+                users.push({
+                  fullname: parts[0].trim(),
+                  email: parts[1].trim(),
+                  password: parts[2].trim(),
+                  role: parts[3]?.trim() || 'user'
+                });
+              }
+            }
+          }
+
+          if (users.length === 0) {
+            alert("Aucun utilisateur valide trouvé dans le fichier.");
+            return;
+          }
+
+          const response = await api.post('/app-settings/import-users', { users });
+          alert(response.message);
+        } catch (error) {
+          alert("Erreur de lecture du fichier : " + error.message);
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = null; // Reset input
+    }
+  };
+
+  const handleExportData = async () => {
+    try {
+      const response = await api.get('/app-settings/global');
+      const settings = response;
+      
+      const data = {
+        platform: settings,
+        exportDate: new Date().toISOString()
+      };
+      
+      const fileName = `quickpop_export_${new Date().toISOString().slice(0, 10)}.json`;
+      const json = JSON.stringify(data, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const href = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = href;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(href);
+    } catch (e) {
+      console.error(e);
+      alert("Erreur lors de l'export");
+    }
+  };
+
+  const handleSendNotification = async () => {
+    const message = prompt("Entrez le message de la notification globale :");
+    if (message) {
+      try {
+        await notificationService.sendBroadcastNotification({
+            title: 'Message Admin',
+            body: message,
+            type: 'info'
+        });
+        alert(`Notification envoyée à tous les utilisateurs : "${message}"`);
+      } catch (error) {
+        console.error("Failed to send notification", error);
+        alert("Erreur lors de l'envoi de la notification");
+      }
+    }
+  };
+
+  const handleResetData = async () => {
+    if (window.confirm("Êtes-vous sûr de vouloir réinitialiser toutes les données ? Cette action est irréversible et effacera tous les utilisateurs, vidéos et certifications.")) {
+      if (window.confirm("Confirmez-vous vraiment la suppression TOTALE ?")) {
+        try {
+          await api.post('/app-settings/reset-data');
+          alert("Réinitialisation effectuée avec succès.");
+          navigate('/login');
+        } catch {
+          alert("Erreur serveur.");
+        }
+      }
+    }
+  };
 
    return (
      <div className="space-y-6">
@@ -60,7 +209,7 @@
                 <input
                   type="text"
                   value={platformName}
-                  onChange={(e) => setPlatformName(e.target.value)}
+                  onChange={handleInputChange(setPlatformName)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
@@ -69,7 +218,7 @@
                 <input
                   type="email"
                   value={contactEmail}
-                  onChange={(e) => setContactEmail(e.target.value)}
+                  onChange={handleInputChange(setContactEmail)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
@@ -77,7 +226,7 @@
                 <label className="block text-sm font-medium text-gray-700 mb-2">Langue par défaut</label>
                 <select
                   value={language}
-                  onChange={(e) => setLanguage(e.target.value)}
+                  onChange={handleInputChange(setLanguage)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                 >
                   <option>Français</option>
@@ -113,6 +262,13 @@
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <h3 className="font-bold text-gray-900 mb-4">Actions rapides</h3>
             <div className="space-y-2">
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileChange} 
+                className="hidden" 
+                accept=".csv,.json,.xlsx"
+              />
               <button
                 onClick={handleImportUsers}
                 className="w-full flex items-center gap-3 p-3 text-left hover:bg-gray-50 rounded-lg transition"
@@ -143,7 +299,10 @@
               <h3 className="font-bold text-amber-900">Zone dangereuse</h3>
             </div>
             <p className="text-sm text-amber-700 mb-4">Actions irréversibles nécessitant une confirmation</p>
-            <button className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm font-medium">
+            <button 
+              onClick={handleResetData}
+              className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm font-medium"
+            >
               Réinitialiser les données
             </button>
           </div>

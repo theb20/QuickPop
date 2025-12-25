@@ -26,3 +26,19 @@ body::-webkit-scrollbar {
 *::-webkit-scrollbar {
   display: none;            /* Chrome, Safari, Opera */
 }
+
+/* Animated circular border utility */
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes border-spin {
+  to { --angle: 360deg; }
+}
+
+.conic-border {
+  background: conic-gradient(from var(--angle), #ffffff, #ff1100, #ffffff);
+  animation: border-spin 6s linear infinite;
+}
