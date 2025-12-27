@@ -44,11 +44,11 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ErrorBoundary>
       <AuthProvider>
-        <SocketProvider>
-          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <SocketProvider>
             <App />
-          </BrowserRouter>
-        </SocketProvider>
+          </SocketProvider>
+        </BrowserRouter>
       </AuthProvider>
     </ErrorBoundary>
   </StrictMode>,

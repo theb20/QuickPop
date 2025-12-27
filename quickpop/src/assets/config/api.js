@@ -4,15 +4,14 @@ import axios from "axios";
  * Instance Axios principale
  */
 const resolveBaseURL = () => {
-  // 1. En développement : on privilégie l'hôte actuel pour supporter le test sur mobile/LAN
-  // Cela permet d'éviter les erreurs CORS/Network si on accède via IP (ex: 192.168.x.x)
-  if (import.meta.env.DEV && typeof window !== 'undefined') {
-    const host = window.location.hostname;
-    return `http://${host}:3000`;
+  // En développement, utiliser le chemin relatif pour passer par le proxy Vite
+  if (import.meta.env.DEV) {
+    return '/api';
   }
 
   // 2. Variable d'environnement (Production ou override)
   const envUrl = import.meta.env.VITE_API_URL;
+
   console.log('VITE_API_URL:', envUrl);
   if (envUrl && typeof envUrl === 'string' && envUrl.trim().length > 0) {
     return envUrl.trim();

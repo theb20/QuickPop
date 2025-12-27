@@ -1,5 +1,5 @@
-import { ensureCategoriesTable } from '../Models/categoriesModel.js'
-import { findAll, findById, createOne, updateOne, removeOne } from '../Models/baseModel.js'
+import { ensureCategoriesTable } from '../models/categoriesModel.js'
+import { findAll, findById, createOne, updateOne, removeOne } from '../models/baseModel.js'
 
 const TABLE = 'categories'
 const ALLOWED = ['name','description','icon','link','is_active']

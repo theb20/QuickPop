@@ -8,19 +8,34 @@ const defaultItems = [
   { 
     title: 'QuickPop', 
     description: 'Les vidéos essentielles sélectionnées pour toi.', 
-    video: '/videos/quick.mp4', 
+    video: '/vs/quick.mp4', 
     poster: '/imgs/logo-mb.png'
   }
 ];
 
 export default function NetflixHeroSection({ items = defaultItems }) {
   const MotionH2 = motion.h2;
-  const safeItems = Array.isArray(items) ? items : defaultItems;
+  const [hasError, setHasError] = useState(false);
+  
+  // Si une erreur survient (ex: quota Backblaze) ou si aucune vidéo n'est fournie, on bascule sur les items par défaut (locaux)
+  const safeItems = (hasError || !Array.isArray(items) || items.length === 0) ? defaultItems : items;
+  
   const [currentIndex, setCurrentIndex] = useState(0);
   const videoRef = useRef(null);
   const [isPaused, setIsPaused] = useState(false);
 
   const currentItem = safeItems[currentIndex] || safeItems[0];
+
+  // Reset error state if items change (e.g. initial load vs fetched data)
+  // But if we already detected an error with these items, don't reset immediately unless items actually changed content
+  useEffect(() => {
+    if (items && items.length > 0 && items !== defaultItems) {
+       if (hasError) {
+         const timer = setTimeout(() => setHasError(false), 0);
+         return () => clearTimeout(timer);
+       }
+    }
+  }, [items, hasError]);
 
   useEffect(() => {
     if (isPaused) return;
@@ -45,7 +60,7 @@ export default function NetflixHeroSection({ items = defaultItems }) {
 
         {/* VIDÉO DE FOND */}
         <video
-          key={currentIndex}
+          key={`${currentItem.video}-${hasError ? 'err' : 'ok'}`}
           ref={videoRef}
           src={currentItem.video}
           poster={currentItem.poster}
@@ -53,11 +68,18 @@ export default function NetflixHeroSection({ items = defaultItems }) {
           loop
           muted
           playsInline
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"
+          onError={(e) => {
+            console.warn("Video Load Error in Hero, switching to default.", e);
+            if (!hasError) {
+                setHasError(true);
+                setCurrentIndex(0);
+            }
+          }}
         />
 
         {/* OVERLAY GRADIENT NETFLIX */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-red-900/60 to-transparent"></div>
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
 
         {/* CONTENU */}

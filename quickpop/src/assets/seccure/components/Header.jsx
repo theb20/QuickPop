@@ -317,19 +317,8 @@ export default function RestaurantHeader() {
                  </div>
 
                  {/* Animated Height Container */}
-                 <div className={`transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${categoryMenuOpen ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'}`}>
-                    <div className="px-4 pb-6 space-y-2">
-                        <NavLink 
-                          to="/app/category" 
-                          end 
-                          onClick={() => setMobileMenuOpen(false)} 
-                          className={({isActive}) => `flex items-center gap-4 p-4 rounded-2xl transition-all ${isActive ? 'bg-red-50 text-red-600 font-bold' : 'hover:bg-gray-50 text-gray-500'}`}
-                        > 
-                          <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-current">
-                            <Film size={18} />
-                          </div>
-                          <span className="text-lg">Toutes</span> 
-                        </NavLink> 
+                 <div className={`transition-all  duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${categoryMenuOpen ? 'max-h-[1900px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                    <div className="px-4 pb-6 h-[1900px] overflow-auto space-y-2">
                         {categories.map((category) => ( 
                           <NavLink 
                               key={category.id} 

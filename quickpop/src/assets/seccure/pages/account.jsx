@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { User, Building2, MapPin, Mail, Phone, Calendar, Clock, Award, BookOpen, TrendingUp, LayoutDashboard, LogOut, Bell, Globe, BrickWallShield, ChevronRight, ArrowLeft, Camera, Save, X, Check, Download } from 'lucide-react';
+import { User, Building2, MapPin, Mail, Phone, Calendar, Clock, Award, BookOpen, TrendingUp, LayoutDashboard, LogOut, Bell, Globe, BrickWallShield, ChevronRight, ArrowLeft, Camera, Save, X, Check, Download, Send } from 'lucide-react';
 import Badge from '../components/badge.jsx';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../config/hooks/auth.js';
 import { useAccountData } from '../../config/hooks/account.js';
+import { createSupport } from '../../config/services/support.js';
 import NavBar from '../components/Nav.jsx'
 
 // Sub-components for cleaner render
@@ -103,15 +104,20 @@ export default function QuickPopProfile() {
   }, [user?.email, user?.restaurant, isEditing]);
 
   // State for notifications
-  const [notifications, setNotifications] = useState({
-    email: true,
-    push: true,
-    updates: false,
-    marketing: false
-  });
+  // const [notifications, setNotifications] = useState({
+  //   email: true,
+  //   push: true,
+  //   updates: false,
+  //   marketing: false
+  // });
 
   // Animation states
   const [showToast, setShowToast] = useState(null);
+
+  // Support form state
+  const [contactSubject, setContactSubject] = useState('');
+  const [contactMessage, setContactMessage] = useState('');
+  const [sendingSupport, setSendingSupport] = useState(false);
 
   // Derived data
   const isAdmin = user?.role === 'admin';
@@ -175,6 +181,29 @@ export default function QuickPopProfile() {
     if (path === '/account/setting/info') setActiveView('settings-info');
     else if (path === '/account/setting/notifications') setActiveView('settings-notif');
     else navigate(path);
+  };
+
+  const handleSupportSubmit = async (e) => {
+    e.preventDefault();
+    if (!contactSubject.trim() || !contactMessage.trim()) return;
+    
+    setSendingSupport(true);
+    try {
+      await createSupport({
+        user_id: user.id,
+        subject: contactSubject,
+        message: contactMessage
+      });
+      showNotification('Message envoyé avec succès');
+      setContactSubject('');
+      setContactMessage('');
+      setTimeout(() => setActiveView('main'), 1500);
+    } catch (err) {
+      console.error(err);
+      showNotification("Erreur lors de l'envoi du message");
+    } finally {
+      setSendingSupport(false);
+    }
   };
 
 
@@ -266,32 +295,47 @@ export default function QuickPopProfile() {
           
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="p-4 sm:p-6 border-b border-gray-200">
-              <h2 className="text-xl font-bold text-gray-900">Préférences de notifications</h2>
-              <p className="text-gray-500 text-sm mt-1">Gérez comment vous souhaitez être contacté.</p>
+              <h2 className="text-xl font-bold text-gray-900">Contactez le support</h2>
+              <p className="text-gray-500 text-sm mt-1">Laissez un message à l'administrateur.</p>
             </div>
             
-            <div className="divide-y divide-gray-100">
-              {Object.entries(notifications).map(([key, value]) => (
-                <div key={key} className="p-4 sm:p-6 flex items-center justify-between hover:bg-gray-50 transition">
-                  <div>
-                    <h3 className="font-medium text-gray-900 capitalize">
-                      {key === 'email' ? 'Notifications par Email' : 
-                       key === 'push' ? 'Notifications Push' : 
-                       key === 'updates' ? 'Mises à jour système' : 'Offres et actualités'}
-                    </h3>
-                    <p className="text-sm text-gray-500 mt-1">
-                      {value ? 'Activé' : 'Désactivé'}
-                    </p>
-                  </div>
-                  <button 
-                    onClick={() => setNotifications({...notifications, [key]: !value})}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${value ? 'bg-red-600' : 'bg-gray-200'}`}
-                  >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${value ? 'translate-x-6' : 'translate-x-1'}`} />
-                  </button>
-                </div>
-              ))}
-            </div>
+            <form onSubmit={handleSupportSubmit} className="p-4 sm:p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Sujet</label>
+                <input 
+                  type="text" 
+                  value={contactSubject}
+                  onChange={(e) => setContactSubject(e.target.value)}
+                  className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-100 focus:border-red-400 outline-none transition"
+                  placeholder="Sujet de votre message"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                <textarea 
+                  value={contactMessage}
+                  onChange={(e) => setContactMessage(e.target.value)}
+                  className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-100 focus:border-red-400 outline-none transition h-32 resize-none"
+                  placeholder="Votre message..."
+                  required
+                />
+              </div>
+              <div className="flex justify-end pt-2">
+                <button 
+                  type="submit" 
+                  disabled={sendingSupport}
+                  className="bg-red-600 text-white px-6 py-2.5 rounded-lg hover:bg-red-700 font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-lg shadow-red-500/30"
+                >
+                  {sendingSupport ? (
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <Send size={18} />
+                  )}
+                  <span>Envoyer</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>

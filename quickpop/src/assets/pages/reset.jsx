@@ -185,7 +185,7 @@ const PasswordResetFlow = () => {
 
 
       {/* Left side - Image/Brand */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden opacity-90 bg-[url('/imgs/wall-reset.png')] bg-cover bg-center after:content-[''] after:absolute after:inset-0 after:bg-black/60">
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden opacity-90 bg-[url('https://www.booska-p.com/wp-content/uploads/2021/08/finalement-quick-ne-devrait-pas-disparaitre-en-france-649.jpg')] bg-cover bg-center after:content-[''] after:absolute after:inset-0 after:bg-black/60">
         
         
         <div className="relative z-10 flex flex-col justify-between p-12 text-white w-full">

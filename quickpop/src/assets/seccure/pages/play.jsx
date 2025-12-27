@@ -9,6 +9,7 @@ import { updateVideoProgress } from '../../config/services/videos.js';
 import { getOfflineVideo } from '../../config/services/offline.js';
 import { getLikes, createLike, deleteLike } from '../../config/services/likes.js';
 import { useAuth } from '../../config/hooks/auth.js';
+import CertificationSuccess from '../components/CertificationSuccess.jsx';
 
 export default function VideoPlayer() {
   const location = useLocation();
@@ -37,6 +38,16 @@ export default function VideoPlayer() {
   const [likeId, setLikeId] = useState(null);
   const [retriedOffline, setRetriedOffline] = useState(false);
   const controlsTimeoutRef = useRef(null);
+  const certificateAwardedRef = useRef(false);
+
+  // Reset state when videoId changes
+  useEffect(() => {
+    setRetriedOffline(false);
+    setError(null);
+    setIsPlaying(false);
+    setProgress(0);
+    setShowCertModal(false);
+  }, [videoId]);
 
   // 0. Check Like Status
   useEffect(() => {
@@ -77,7 +88,13 @@ export default function VideoPlayer() {
           if (navigator.onLine) {
             const response = await api.get(`/videos/${videoId}`);
             if (response) {
-              setVideoUrl(response.video_url);
+              let url = response.video_url;
+              // Fix for localhost URLs when accessing from IP (mobile testing)
+              // Replace localhost with current hostname to allow access from other devices
+              if (url && url.includes('localhost') && window.location.hostname !== 'localhost') {
+                 url = url.replace('localhost', window.location.hostname);
+              }
+              setVideoUrl(url);
               setTitle(response.title);
               setIsLoading(false);
               return;
@@ -201,7 +218,13 @@ export default function VideoPlayer() {
 
       // Sync progress with server every 10 seconds (approx)
       if (user && videoId && Math.floor(current) % 10 === 0 && current > 0 && navigator.onLine) {
-         updateVideoProgress(videoId, pct, current, duration).catch(() => console.log('Offline progress sync skipped'));
+         updateVideoProgress(videoId, pct, current, duration)
+           .then(res => {
+             if (res && res.certificateAwarded) {
+               certificateAwardedRef.current = true;
+             }
+           })
+           .catch(() => console.log('Offline progress sync skipped'));
       }
     }
   };
@@ -213,7 +236,7 @@ export default function VideoPlayer() {
         if (navigator.onLine) {
             try {
                 const res = await updateVideoProgress(videoId, 100, duration, duration);
-                if (res && res.certificateAwarded) {
+                if ((res && res.certificateAwarded) || certificateAwardedRef.current) {
                     setShowCertModal(true);
                 }
             } catch (error) {
@@ -320,6 +343,7 @@ export default function VideoPlayer() {
 
       <video
         ref={videoRef}
+        key={videoUrl}
         src={getSourceUrl(videoUrl)}
         className="w-full h-full object-contain"
         playsInline
@@ -352,6 +376,16 @@ export default function VideoPlayer() {
              } catch (recoveryErr) {
                 console.error("Recovery failed:", recoveryErr);
              }
+
+             // 🚨 FALLBACK MODE TEST (Si offline échoue aussi)
+             // Si Backblaze est bloqué (quota), on utilise une vidéo de test pour ne pas bloquer le dév
+             console.log("⚠️ Fallback to Demo Video (Quota Exceeded Mode)");
+             const demoVideo = "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+             setVideoUrl(demoVideo);
+             setError(null);
+             // Petit toast ou log pour prévenir l'utilisateur ?
+             // alert("Mode Démo activé : Quota Backblaze dépassé. Utilisation d'une vidéo test.");
+             return;
           }
 
           let msg = "Impossible de lire la vidéo.";
@@ -448,42 +482,13 @@ export default function VideoPlayer() {
           </div>
         </div>
       </div>
-      {/* Certification Modal */}
+      {/* Certification Modal - AI Animation */}
       {showCertModal && (
-        <div className="absolute inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="bg-gradient-to-br from-gray-900 to-black border border-amber-500/30 p-8 rounded-2xl max-w-md w-full text-center shadow-2xl relative overflow-hidden">
-             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500 to-transparent"></div>
-             
-             <div className="mb-6 flex justify-center">
-               <div className="relative">
-                 <div className="absolute inset-0 bg-amber-500 blur-xl opacity-20 rounded-full"></div>
-                 <div className="w-20 h-20 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center shadow-lg relative z-10 border-4 border-black">
-                   <Award className="w-10 h-10 text-white" />
-                 </div>
-               </div>
-             </div>
-
-             <h2 className="text-2xl font-bold text-white mb-2">Félicitations !</h2>
-             <p className="text-gray-300 mb-6">
-               Vous avez terminé <span className="text-amber-400 font-semibold">"{title}"</span> et obtenu une nouvelle certification.
-             </p>
-
-             <div className="flex gap-3 justify-center">
-                <button 
-                  onClick={() => setShowCertModal(false)}
-                  className="px-6 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-medium transition"
-                >
-                  Fermer
-                </button>
-                <button 
-                  onClick={() => navigate('/app/account', { state: { activeTab: 'certifications' } })}
-                  className="px-6 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-black font-bold transition shadow-lg shadow-amber-500/20"
-                >
-                  Voir mes badges
-                </button>
-             </div>
-          </div>
-        </div>
+        <CertificationSuccess 
+          title={title}
+          onClose={() => setShowCertModal(false)}
+          onGoToProfile={() => navigate('/app/account', { state: { activeTab: 'certifications' } })}
+        />
       )}
     </div>
   );

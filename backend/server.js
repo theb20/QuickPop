@@ -122,25 +122,33 @@ app.use(helmet({
 
 // 2. CORS - Configuration (souple en développement, stricte en production)
 const allowedOrigins = process.env.ALLOWED_ORIGINS 
-  ? process.env.ALLOWED_ORIGINS.split(',').map(s => s.trim()).filter(Boolean)
+  ? process.env.ALLOWED_ORIGINS.split(',').map(s => s.trim().replace(/\/$/, '')).filter(Boolean)
   : IS_PRODUCTION 
     ? ['https://votredomaine.com']
-    : ['http://192.168.1.195:3005/', ]
+    : ['http://localhost:3005', 'http://localhost:5173', 'http://localhost:3000'];
 
 const corsOptions = {
   origin: (origin, callback) => {
+    // Autoriser les requêtes sans origine (ex: curl, mobile apps, outils backend)
+    if (!origin) return callback(null, true);
+
     if (!IS_PRODUCTION) {
-      // Dev: autoriser toutes les origines (navigateurs sur le LAN)
+      // Dev: autoriser toutes les origines (navigateurs sur le LAN, localhost, IP)
       return callback(null, true)
     }
-    if (!origin) return callback(null, true) // ex: curl, outils
-    if (allowedOrigins.includes(origin)) return callback(null, true)
-    return callback(new Error('CORS: Origin non autorisée'))
+
+    // Production : Vérification stricte
+    if (allowedOrigins.includes(origin) || allowedOrigins.some(allowed => origin.startsWith(allowed))) {
+      return callback(null, true)
+    }
+    
+    console.error(`🔴 CORS Bloqué: ${origin}`);
+    return callback(new Error(`CORS: Origin ${origin} non autorisée`))
   },
   credentials: true,
   optionsSuccessStatus: 200,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Range', 'X-Requested-With']
 };
 app.use(cors(corsOptions));
 
@@ -263,13 +271,29 @@ app.use(validateInput);
 // ROUTES
 // ========================================
 
+app.use('/api/users', strictLimiter, usersRoutes);
+app.use('/api/certifications', certificationsRoutes);
+app.use('/api/auth', strictLimiter, authRoutes);
+app.use('/api/account', strictLimiter, accountRoutes);
+app.use('/api/categories', categoriesRoutes);
+app.use('/api/videos', videosRoutes);
+app.use('/api/likes', likesRoutes);
+app.use('/api/comments', commentsRoutes);
+app.use('/api/playlists', playlistsRoutes);
+app.use('/api/playlist-videos', playlistVideosRoutes);
+app.use('/api/support', strictLimiter, supportRoutes);
+app.use('/api/app-settings', appSettingsRoutes);
+app.use('/api/search', searchRoutes);
+app.use('/api/reports', reportsRoutes);
+app.use('/api/notifications', notificationsRoutes);
+
+// Legacy/Fallback routes (without /api prefix) for backward compatibility
 app.use('/users', strictLimiter, usersRoutes);
 app.use('/certifications', certificationsRoutes);
 app.use('/auth', strictLimiter, authRoutes);
 app.use('/account', strictLimiter, accountRoutes);
 app.use('/categories', categoriesRoutes);
-app.use('/api/videos', videosRoutes);
-app.use('/videos', videosRoutes); // Fallback for existing routes
+app.use('/videos', videosRoutes);
 app.use('/likes', likesRoutes);
 app.use('/comments', commentsRoutes);
 app.use('/playlists', playlistsRoutes);

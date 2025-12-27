@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
-import { ensureUsersTable, create, findById, update, findByEmail, findByCode, setResetCodeByEmail, clearResetCodeByEmail, updatePasswordByEmail } from '../Models/usersModel.js'
+import { ensureUsersTable, create, findById, update, findByEmail, findByCode, setResetCodeByEmail, clearResetCodeByEmail, updatePasswordByEmail } from '../models/usersModel.js'
 import { sendResetCodeMail } from '../Config/mailer.js'
 
 const SECRET = process.env.JWT_SECRET

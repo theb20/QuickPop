@@ -4,9 +4,11 @@ import { useAuth } from '../hooks/auth';
 import * as notificationService from '../services/notifications.js';
 import { SocketContext } from './useSocket';
 import { Bell, CheckCircle, AlertCircle, AlertTriangle, Info, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export const SocketProvider = ({ children }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [socket, setSocket] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [onlineUsers, setOnlineUsers] = useState([]);
@@ -138,12 +140,17 @@ export const SocketProvider = ({ children }) => {
         setOnlineUsers(users);
     });
 
+    socket.on('user_blocked', () => {
+      navigate('/wait');
+    });
+
     return () => {
       socket.off('connect', joinRoom);
       socket.off('notification', handleNotification);
       socket.off('online_users');
+      socket.off('user_blocked');
     };
-  }, [socket, user, addToast, updateAppBadge]);
+  }, [socket, user, addToast, updateAppBadge, navigate]);
 
   useEffect(() => {
       // Request notification permission

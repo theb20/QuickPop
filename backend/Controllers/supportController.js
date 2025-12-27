@@ -1,5 +1,6 @@
 import { ensureSupportTable } from '../Models/supportModel.js'
 import { findAll, findById, createOne, updateOne, removeOne } from '../Models/baseModel.js'
+import { sendSupportMail } from '../Config/mailer.js'
 
 const TABLE = 'support'
 const ALLOWED = ['user_id','subject','message','status','priority','assigned_to','closed_at']
@@ -34,6 +35,25 @@ export async function createSupport(req, res) {
   try {
     const id = await createOne(TABLE, req.body || {}, { allowed: ALLOWED })
     const created = await findById(TABLE, id)
+    
+    // Envoyer l'email de notification si l'utilisateur est identifié
+    if (req.body.user_id) {
+      try {
+        const user = await findById('users', req.body.user_id)
+        if (user) {
+          await sendSupportMail(
+            user.email,
+            user.fullname || user.username || 'Utilisateur',
+            req.body.subject,
+            req.body.message
+          )
+        }
+      } catch (mailError) {
+        console.error('Erreur envoi mail support:', mailError)
+        // On ne bloque pas la réponse si le mail échoue
+      }
+    }
+
     res.status(201).json(created)
   } catch (err) {
     res.status(500).json({ error: err.message })

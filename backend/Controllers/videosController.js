@@ -1,4 +1,4 @@
-import { ensureVideosTable, findByCategory, incrementViews as incViewsModel, getLatestVideosPerCategory, getFeaturedVideos, getTrendingVideos, getVideoById } from '../Models/videosModel.js'
+import { ensureVideosTable, findByCategory, incrementViews as incViewsModel, getLatestVideosPerCategory, getFeaturedVideos, getTrendingVideos, getVideoById, updateVideoUrlInDb } from '../Models/videosModel.js'
 import { addRating, getVideoRating } from '../Models/ratingsModel.js'
 import { findAll, findById, createOne, updateOne, removeOne } from '../Models/baseModel.js'
 import { findTrainingByVideoId, createTrainingFromVideo, updateUserTrainingProgress } from '../Models/trainingsModel.js'
@@ -368,12 +368,9 @@ export async function uploadVideoFile(req, res) {
       // We don't have `req.protocol` and `req.get('host')` easily in all envs (behind nginx etc), but we can try.
       // Actually, let's just store the B2 Direct URL if possible, but the user asked to replace Dropbox.
       
-      // Let's go with the Proxy approach:
-      // We will store a special URL that the frontend or backend can recognize?
-      // No, let's store the full HTTP proxy URL.
-      const protocol = req.protocol
-      const host = req.get('host')
-      videoUrl = `${protocol}://${host}/videos/proxy/${key}?provider=backblaze`
+      // Use relative URL so it works via Proxy from any device (localhost or IP)
+      // The frontend Vite proxy or Nginx will forward /videos/proxy to the backend
+      videoUrl = `/videos/proxy/${key}?provider=backblaze`
 
     } 
     // ☁️ GOOGLE DRIVE FALLBACK
@@ -612,10 +609,21 @@ export async function streamVideo(req, res) {
             
         } catch (s3Err) {
             console.error('❌ Backblaze S3 Error:', s3Err);
-            if (s3Err.name === 'NoSuchKey') {
-                return res.status(404).json({ error: 'File not found in Backblaze bucket' });
+            
+            // Gestion spécifique des erreurs de quota Backblaze
+            if (s3Err.Code === 'AccessDenied' && (s3Err.message?.includes('cap exceeded') || s3Err.toString().includes('cap exceeded'))) {
+                return res.status(503).json({ 
+                    error: 'Limite de bande passante Backblaze dépassée. Veuillez patienter ou mettre à niveau le compte de stockage.',
+                    details: s3Err.message 
+                });
             }
-            throw s3Err;
+
+            if (s3Err.name === 'NoSuchKey') {
+                return res.status(404).json({ error: 'Fichier vidéo introuvable dans le bucket Backblaze' });
+            }
+            
+            // Erreur générique
+            return res.status(500).json({ error: 'Erreur lors du streaming depuis Backblaze', details: s3Err.message });
         }
         return;
     }
@@ -692,3 +700,5 @@ export async function streamVideo(req, res) {
     }
   }
 }
+
+

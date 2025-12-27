@@ -97,7 +97,10 @@ export default function StreamingHomepage() {
     <div className="min-h-screen bg-white text-black">
       {/* Hero Section */}
       <section className="relative -z-2 h-screen w-full ">
-        <HomeAnimate items={latestVideos.length > 0 ? latestVideos : undefined} />
+        <HomeAnimate 
+          items={latestVideos.length > 0 ? latestVideos : undefined} 
+          key={latestVideos.length} 
+        />
       </section>
 
       <style>{`
@@ -112,7 +115,7 @@ export default function StreamingHomepage() {
 
       {/* Featured Section */}
       <motion.section
-        className="relative mt-8  z-10 pb-12"
+        className="relative mt-8  pb-12"
         variants={fadeUp}
         initial="hidden"
         whileInView="show"

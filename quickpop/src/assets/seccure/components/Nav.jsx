@@ -1,9 +1,8 @@
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 export default function NavBar() {
-  const navigate = useNavigate();
   const location = useLocation();
 
   const links = [
@@ -13,42 +12,33 @@ export default function NavBar() {
   ];
 
   return (
-    <nav className="flex items-center gap-12 px-10 py-5 bg-white border-b border-gray-100">
-      {links.map((link) => {
-        const active = location.pathname === link.path;
+    <nav className="p-1 bg-white/90 backdrop-blur-xl border border-white/20 rounded-full shadow-2xl shadow-black/5 ring-1 ring-black/5">
+      <ul className="flex items-center gap-1">
+        {links.map((link) => {
+          const isActive = location.pathname === link.path;
 
-        return (
-          <button
-            key={link.path}
-            onClick={() => navigate(link.path)}
-            className="relative group text-sm font-semibold tracking-wide"
-          >
-            {/* Texte */}
-            <span
-              className={`relative z-10 transition-colors duration-300 ${
-                active
-                  ? 'text-red-600'
-                  : 'text-gray-800 group-hover:text-red-500'
-              }`}
-            >
-              {link.label}
-            </span>
-
-            {/* Seal anime */}
-            {active && (
-              <motion.span
-                initial={{ scale: 0.6, rotate: -6, opacity: 0 }}
-                animate={{ scale: 1, rotate: 0, opacity: 1 }}
-                transition={{ type: 'spring', stiffness: 260, damping: 18 }}
-                className="absolute -inset-x-4 -inset-y-2 rounded-md bg-red-600/10 border border-red-500/30"
-              />
-            )}
-
-            {/* Hover accent */}
-            <span className="absolute -bottom-3 left-1/2 h-[3px] w-0 -translate-x-1/2 bg-red-500/70 rounded-full transition-all duration-300 group-hover:w-full" />
-          </button>
-        );
-      })}
+          return (
+            <li key={link.path}>
+              <Link
+                to={link.path}
+                className={`relative block px-4 py-2 md:px-6 md:py-2.5 text-sm font-bold tracking-wide transition-colors duration-200 ${
+                  isActive ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="nav-pill"
+                    className="absolute inset-0 bg-white rounded-full shadow-sm border border-gray-100/50"
+                    initial={false}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  />
+                )}
+                <span className="relative z-10">{link.label}</span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
     </nav>
   );
 }

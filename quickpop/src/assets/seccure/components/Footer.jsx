@@ -13,7 +13,7 @@ export default function RestaurantFooter() {
   return (
     <div className="">
       {!IsPlay && !IsAccount && (
-      <footer className="bg-white text-gray-900">
+      <footer className="bg-white text-gray-900 hidden md:block">
         {/* Newsletter Section */}
         {IsApp && (
           <div className="bg-[url('/imgs/wall-minion.jpg')] bg-cover bg-center">

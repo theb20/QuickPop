@@ -107,6 +107,27 @@ export async function getVideoById(id) {
   return rows[0]
 }
 
+export async function updateVideoUrlInDb(id, newUrl) {
+  await db.query('UPDATE videos SET video_url = ? WHERE id = ?', [newUrl, id])
+}
+
+export async function fixLocalhostUrls() {
+  const sqlVideo = `
+    UPDATE videos
+    SET video_url = REPLACE(video_url, 'http://localhost:3000', '')
+    WHERE video_url LIKE 'http://localhost:3000/%'
+  `
+  const sqlThumb = `
+    UPDATE videos
+    SET thumbnail_url = REPLACE(thumbnail_url, 'http://localhost:3000', '')
+    WHERE thumbnail_url LIKE 'http://localhost:3000/%'
+  `
+  const [res1] = await db.query(sqlVideo)
+  const [res2] = await db.query(sqlThumb)
+  return { video: res1, thumbnail: res2 }
+}
+
+
 export async function searchVideos(query) {
   if (!query) return []
   const [rows] = await db.query(

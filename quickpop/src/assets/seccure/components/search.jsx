@@ -130,7 +130,7 @@ export default function EnterpriseSearchZone() {
         
         {/* Zone de recherche principale */}
         <div className="relative">
-          <div className={`relative bg-white rounded-2xl shadow-lg transition-all duration-300 ${isFocused ? 'shadow-2xl ring-4 ring-red-200' : 'shadow-lg'}`}>
+          <div className={`relative bg-white rounded-full shadow-lg transition-all duration-300 ${isFocused ? 'shadow-2xl ring-4 ring-red-200' : 'shadow-lg'}`}>
             <div className="flex items-center p-5">
               <Search className={`w-6 h-6 transition-colors duration-300 ${isFocused ? 'text-red-600' : 'text-gray-400'}`} />
               
