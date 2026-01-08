@@ -58,15 +58,15 @@ export default defineConfig({
     port: 3005,
     proxy: {
       '/api': {
-        target: 'http://localhost:3000',
+        target: 'https://quickpop.alwaysdata.net/',
         changeOrigin: true,
       },
       '/videos': {
-        target: 'http://localhost:3000',
+        target: 'https://quickpop.alwaysdata.net/',
         changeOrigin: true,
       },
       '/socket.io': {
-        target: 'http://localhost:3000',
+        target: 'https://quickpop.alwaysdata.net/',
         ws: true,
         changeOrigin: true,
       }

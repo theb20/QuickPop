@@ -1,4 +1,4 @@
-import db from '../Config/db.js'
+import db from '../config/db.js'
 
 export async function ensureRatingsTable() {
   const sql = `

@@ -1,4 +1,4 @@
-import db from '../Config/db.js'
+import db from '../config/db.js'
 
 export async function findAll(table, { columns = ['*'], limit = 50, offset = 0, orderBy = 'id', orderDir = 'DESC' } = {}) {
   const cols = columns.join(', ')

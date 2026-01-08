@@ -1,5 +1,5 @@
-import { searchVideos } from '../Models/videosModel.js'
-import { searchCategories } from '../Models/categoriesModel.js'
+import { searchVideos } from '../models/videosModel.js'
+import { searchCategories } from '../models/categoriesModel.js'
 
 export async function globalSearch(req, res) {
   try {

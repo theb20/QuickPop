@@ -5,7 +5,7 @@ dotenv.config()
 
 const SECRET = process.env.JWT_SECRET
 
-export function requireAuth(req, res, next) {
+export default function requireAuth(req, res, next) {
   try {
     const header = req.headers.authorization || ''
     const parts = header.split(' ')

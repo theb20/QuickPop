@@ -1,9 +1,9 @@
-import { ensureVideosTable, findByCategory, incrementViews as incViewsModel, getLatestVideosPerCategory, getFeaturedVideos, getTrendingVideos, getVideoById, updateVideoUrlInDb } from '../Models/videosModel.js'
-import { addRating, getVideoRating } from '../Models/ratingsModel.js'
-import { findAll, findById, createOne, updateOne, removeOne } from '../Models/baseModel.js'
-import { findTrainingByVideoId, createTrainingFromVideo, updateUserTrainingProgress } from '../Models/trainingsModel.js'
-import { awardCertificateForTraining } from '../Models/certificationsModel.js'
-import { createBroadcastNotification, createNotification } from '../Models/notificationsModel.js'
+import { ensureVideosTable, findByCategory, incrementViews as incViewsModel, getLatestVideosPerCategory, getFeaturedVideos, getTrendingVideos, getVideoById, updateVideoUrlInDb } from '../models/videosModel.js'
+import { addRating, getVideoRating } from '../models/ratingsModel.js'
+import { findAll, findById, createOne, updateOne, removeOne } from '../models/baseModel.js'
+import { findTrainingByVideoId, createTrainingFromVideo, updateUserTrainingProgress } from '../models/trainingsModel.js'
+import { awardCertificateForTraining } from '../models/certificationsModel.js'
+import { createBroadcastNotification, createNotification } from '../models/notificationsModel.js'
 import { google } from 'googleapis'
 import { Readable } from 'stream'
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3'
@@ -411,7 +411,12 @@ export async function uploadVideoFile(req, res) {
         })
 
         // Construct Video URL
-        videoUrl = `https://drive.google.com/uc?export=download&id=${cloudFileId}`
+      // Use proxy endpoint to handle streaming for Google Drive
+      const baseUrl = process.env.API_URL || 'http://localhost:3000';
+      
+      // Store the proxy URL in database
+      // This way, the frontend will simply request this URL, and our backend will stream it
+      videoUrl = `/videos/proxy/${cloudFileId}?provider=google_drive`;
     }
 
     // Create DB Entry
@@ -490,6 +495,68 @@ export async function streamVideo(req, res) {
 
     console.log(`[${requestId}] Params: fileId=${fileId}, provider=${provider}`);
     if (externalUrl) console.log(`[${requestId}] External URL: ${externalUrl}`);
+
+    // ☁️ GOOGLE DRIVE PROVIDER
+    if (provider === 'google_drive') {
+        console.log(`[${requestId}] ☁️ Provider: Google Drive`);
+        const drive = getDriveClient()
+
+        // Get file info for size
+        const fileInfo = await drive.files.get({
+            fileId: fileId,
+            fields: 'size, mimeType'
+        });
+        
+        const fileSize = parseInt(fileInfo.data.size);
+        console.log(`[${requestId}] 📦 File Size: ${fileSize} bytes`);
+
+        const range = req.headers.range;
+        if (range) {
+            console.log(`[${requestId}] 📏 Range Requested: ${range}`);
+            const parts = range.replace(/bytes=/, "").split("-");
+            const start = parseInt(parts[0], 10);
+            const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+            const chunksize = (end - start) + 1;
+
+            console.log(`[${requestId}] ✂️ Serving bytes ${start}-${end} (${chunksize} bytes)`);
+
+            const headers = {
+                'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+                'Accept-Ranges': 'bytes',
+                'Content-Length': chunksize,
+                'Content-Type': 'video/mp4', // Force MP4 for better browser support
+            };
+            res.writeHead(206, headers);
+
+            const stream = await drive.files.get({
+                fileId: fileId,
+                alt: 'media'
+            }, {
+                headers: { "Range": `bytes=${start}-${end}` },
+                responseType: 'stream'
+            });
+
+            stream.data.pipe(res);
+            stream.data.on('end', () => console.log(`[${requestId}] ✅ Chunk Sent`));
+            stream.data.on('error', (err) => console.error(`[${requestId}] ❌ Stream Error:`, err));
+
+        } else {
+            console.log(`[${requestId}] 📦 Full File Requested`);
+            const headers = {
+                'Content-Length': fileSize,
+                'Content-Type': 'video/mp4',
+            };
+            res.writeHead(200, headers);
+
+            const stream = await drive.files.get({
+                fileId: fileId,
+                alt: 'media'
+            }, { responseType: 'stream' });
+
+            stream.data.pipe(res);
+        }
+        return;
+    }
 
     // 🔗 UNIVERSAL URL RELAY (For Shared Links without File ID)
     if (fileId === 'external' && externalUrl) {

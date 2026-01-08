@@ -175,12 +175,29 @@ export default function VideoPlayer() {
     };
   }, [isPlaying]);
 
-  // Helpers pour l'URL (Proxy Dropbox/Drive)
+  // Helpers pour l'URL (Proxy Dropbox/Drive/Backblaze)
   const getSourceUrl = (url) => {
     if (!url) return '';
     
     // Si l'URL est déjà proxifiée ou locale, on la retourne
     if (url.startsWith('http://localhost') || url.startsWith('/')) return url;
+
+    // Détection Backblaze B2 pour passer par le proxy si besoin ou direct
+    if (url.includes('backblazeb2.com')) {
+       // Si c'est un bucket privé, on doit passer par notre proxy pour signer l'URL ou streamer
+       // Ou utiliser l'URL signée retournée par le backend si elle l'est déjà
+       // Dans notre cas, le backend renvoie souvent l'URL brute S3.
+       // On va forcer le passage par le proxy vidéo pour gérer les headers et la sécurité
+       
+       // Extraire la clé du fichier (le path après le nom de domaine)
+       // Ex: https://s3.eu-central-003.backblazeb2.com/quickpop-videos/ma-video.mp4
+       // Key: ma-video.mp4 (si à la racine du bucket)
+       
+       // Simplification : On envoie l'URL complète au proxy qui saura quoi faire
+       const baseUrl = api.defaults.baseURL || '';
+       const encodedUrl = encodeURIComponent(url);
+       return `${baseUrl}/videos/proxy/stream?url=${encodedUrl}&provider=backblaze`;
+    }
 
     // Détection Dropbox ou Google Drive pour passer par le proxy backend
     // Cela contourne les problèmes de CORS et de range requests
@@ -296,6 +313,34 @@ export default function VideoPlayer() {
     }
   };
 
+  // 4. Bloquer l'inspecteur (F12, Clic Droit)
+  useEffect(() => {
+    const handleContextMenu = (e) => {
+      e.preventDefault();
+      return false;
+    };
+
+    const handleKeyDown = (e) => {
+      // Bloquer F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+      if (
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j')) ||
+        (e.ctrlKey && (e.key === 'U' || e.key === 'u'))
+      ) {
+        e.preventDefault();
+        return false;
+      }
+    };
+
+    document.addEventListener('contextmenu', handleContextMenu);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('contextmenu', handleContextMenu);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
   // Rendu : Chargement
   if (isLoading) {
     return (
@@ -377,15 +422,13 @@ export default function VideoPlayer() {
                 console.error("Recovery failed:", recoveryErr);
              }
 
-             // 🚨 FALLBACK MODE TEST (Si offline échoue aussi)
+             // 🚨 FALLBACK MODE TEST (DESACTIVÉ)
              // Si Backblaze est bloqué (quota), on utilise une vidéo de test pour ne pas bloquer le dév
-             console.log("⚠️ Fallback to Demo Video (Quota Exceeded Mode)");
-             const demoVideo = "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
-             setVideoUrl(demoVideo);
-             setError(null);
-             // Petit toast ou log pour prévenir l'utilisateur ?
-             // alert("Mode Démo activé : Quota Backblaze dépassé. Utilisation d'une vidéo test.");
-             return;
+             // console.log("⚠️ Fallback to Demo Video (Quota Exceeded Mode)");
+             // const demoVideo = "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+             // setVideoUrl(demoVideo);
+             // setError(null);
+             // return;
           }
 
           let msg = "Impossible de lire la vidéo.";

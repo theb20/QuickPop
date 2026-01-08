@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { 
   listAppSettings, getAppSetting, createAppSetting, updateAppSetting, deleteAppSetting,
   getGlobalSettings, updateGlobalSettings, resetData, importUsers
-} from '../Controllers/appSettingsController.js'
+} from '../controllers/appSettingsController.js'
 
 const router = Router()
 

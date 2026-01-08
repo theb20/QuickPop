@@ -1,5 +1,5 @@
-import { ensureTrainingsTables, getUserTrainings, getTrainingStats } from '../Models/trainingsModel.js'
-import { ensureCertificationsTables, getUserCertifications } from '../Models/certificationsModel.js'
+import { ensureTrainingsTables, getUserTrainings, getTrainingStats } from '../models/trainingsModel.js'
+import { ensureCertificationsTables, getUserCertifications } from '../models/certificationsModel.js'
 
 export async function initAccountController() {
   await ensureTrainingsTables()

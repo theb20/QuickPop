@@ -1,5 +1,5 @@
-import * as model from '../Models/certificationsModel.js'
-import { createNotification } from '../Models/notificationsModel.js'
+import * as model from '../models/certificationsModel.js'
+import { createNotification } from '../models/notificationsModel.js'
 
 export async function initCertificationsController() {
   await model.ensureCertificationsTables()

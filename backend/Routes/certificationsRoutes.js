@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { listCertifications, createCertification, updateCertification, deleteCertification, assignCertification, getCertificationHolders } from '../Controllers/certificationsController.js'
+import { listCertifications, createCertification, updateCertification, deleteCertification, assignCertification, getCertificationHolders } from '../controllers/certificationsController.js'
 
 const router = Router()
 

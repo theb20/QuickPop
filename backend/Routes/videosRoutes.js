@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import multer from 'multer'
-import { listVideos, getVideo, createVideo, updateVideo, deleteVideo, incrementVideoViews, getLatestByCategory, updateVideoProgress, getFeatured, getTrending, uploadVideoFile, streamVideo, rateVideo } from '../Controllers/videosController.js'
-import { requireAuth } from '../Middleware/authMiddleware.js'
+import { listVideos, getVideo, createVideo, updateVideo, deleteVideo, incrementVideoViews, getLatestByCategory, updateVideoProgress, getFeatured, getTrending, uploadVideoFile, streamVideo, rateVideo } from '../controllers/videosController.js'
+import requireAuth from '../middleware/authMiddleware.js'
 
 const router = Router()
 const upload = multer({

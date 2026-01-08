@@ -1,6 +1,6 @@
-import { ensureAppSettingsTable } from '../Models/appSettingsModel.js'
-import { findAll, findById, createOne, updateOne, removeOne } from '../Models/baseModel.js'
-import db from '../Config/db.js'
+import { ensureAppSettingsTable } from '../models/appSettingsModel.js'
+import { findAll, findById, createOne, updateOne, removeOne } from '../models/baseModel.js'
+import db from '../config/db.js'
 import bcrypt from 'bcryptjs'
 
 const TABLE = 'app_settings'
